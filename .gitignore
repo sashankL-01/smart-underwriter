@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+.venv/
+venv/
+.env
+.env.*
+
+# Node
+node_modules/
+dist/
+.vite/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# VS Code
+.vscode/
+
+# PDFs and uploads
+*.pdf
+
+# Chroma persistence
+chroma/
+
+# Build artifacts
+build/
+
+arch.txt
+ui-exp.txt

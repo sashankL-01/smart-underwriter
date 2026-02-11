@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Generator
+import os
 import re
 import fitz  # PyMuPDF
 
@@ -72,24 +73,22 @@ def _detect_section(text: str, font_size: float, current_section: str) -> str:
     return clean_text if is_header else current_section
 
 def parse_pdf(
-    file_bytes: bytes,
-    filename: str,
+    file_path: str,
     policy_id: str,
     jurisdiction: str | None = None,
     claim_type: str | None = None,
-) -> List[DocumentChunk]:
-    doc = fitz.open(stream=file_bytes, filetype="pdf")
-    chunks: List[DocumentChunk] = []
+) -> Generator[DocumentChunk, None, None]:
+    """
+    Parse a PDF file from disk and yield DocumentChunk objects one by one.
+    This avoids loading the entire PDF and all chunks into memory at once.
+    """
+    doc = fitz.open(file_path)
     
     current_section = "General"
     
-    full_text = ""
-    page_texts = []
-    
+    # improved text extraction with layout analysis
     for page_index in range(len(doc)):
         page = doc[page_index]
-        
-        # improved text extraction with layout analysis
         blocks = page.get_text("dict")["blocks"]
         page_text = ""
         
@@ -99,34 +98,27 @@ def parse_pdf(
                     for span in line["spans"]:
                         text = span["text"]
                         size = span["size"]
-                        # flags = span["flags"]  # usage: flags & 16 for bold
                         
                         # Update section context
                         current_section = _detect_section(text, size, current_section)
                         page_text += text + " "
                         
-        page_texts.append((page_index + 1, page_text, current_section))
-        full_text += page_text + "\n\n"
-
-    # Now split the text using improved recursive splitter
-    # Group by section for better context preservation
-    
-    for page_num, text, section in page_texts:
-        raw_chunks = _recursive_split(text, settings.chunk_size, settings.chunk_overlap)
+        # Split the text of this page
+        raw_chunks = _recursive_split(page_text, settings.chunk_size, settings.chunk_overlap)
         
         for chunk_text in raw_chunks:
             if len(chunk_text.strip()) < 50:  # Skip very small chunks
                 continue
                 
             metadata = ChunkMetadata(
-                page_number=page_num,
-                source_filename=filename,
+                page_number=page_index + 1,
+                source_filename=os.path.basename(file_path),
                 policy_id=policy_id,
-                section=section,
+                section=current_section,
                 content_type="policy_text",
                 jurisdiction=jurisdiction,
                 claim_type=claim_type,
             )
-            chunks.append(DocumentChunk(text=chunk_text.strip(), metadata=metadata))
-
-    return chunks
+            yield DocumentChunk(text=chunk_text.strip(), metadata=metadata)
+            
+    doc.close()

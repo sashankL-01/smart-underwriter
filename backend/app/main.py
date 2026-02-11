@@ -15,6 +15,10 @@ from app.schemas.models import (
 )
 from app.agents.orchestrator import run_workflow
 from app.state import get_global_store, register_policy, list_policies, get_policy
+import shutil
+import os
+from typing import Generator
+from app.schemas.models import DocumentChunk
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -54,27 +58,60 @@ async def ingest_policy(
         jurisdiction,
         claim_type,
     )
-    file_bytes = await file.read()
-    chunks = parse_pdf(file_bytes, file.filename, policy_id, jurisdiction, claim_type)
-    logger.debug("Parsed %d chunks from PDF", len(chunks))
-    embeddings = embed_texts([chunk.text for chunk in chunks])
-    logger.debug("Generated %d embeddings", len(embeddings))
+    
+    # Save uploaded file to a temporary file
+    temp_filename = f"temp_{policy_id}_{file.filename}"
+    try:
+        with open(temp_filename, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+            
+        logger.info(f"Saved temp file: {temp_filename}")
+        
+        # Process in batches
+        BATCH_SIZE = 50
+        current_batch: list[DocumentChunk] = []
+        total_chunks = 0
+        store = get_global_store()
+        
+        # Streaming parse
+        chunks_generator = parse_pdf(temp_filename, policy_id, jurisdiction, claim_type)
+        
+        for chunk in chunks_generator:
+            current_batch.append(chunk)
+            
+            if len(current_batch) >= BATCH_SIZE:
+                embeddings = embed_texts([c.text for c in current_batch])
+                store.add(embeddings, current_batch)
+                total_chunks += len(current_batch)
+                logger.debug(f"Processed batch of {len(current_batch)} chunks")
+                current_batch = []
+                
+        # Process remaining chunks
+        if current_batch:
+            embeddings = embed_texts([c.text for c in current_batch])
+            store.add(embeddings, current_batch)
+            total_chunks += len(current_batch)
+            logger.debug(f"Processed final batch of {len(current_batch)} chunks")
+            
+        logger.info("Stored %d chunks for policy_id=%s", total_chunks, policy_id)
 
-    store = get_global_store()
-    store.add(embeddings, chunks)
-    logger.info("Stored %d chunks for policy_id=%s", len(chunks), policy_id)
-
-    register_policy(
-        PolicySummary(
-            policy_id=policy_id,
-            source_filename=file.filename,
-            jurisdiction=jurisdiction,
-            claim_type=claim_type,
-            chunks_indexed=len(chunks),
+        register_policy(
+            PolicySummary(
+                policy_id=policy_id,
+                source_filename=file.filename,
+                jurisdiction=jurisdiction,
+                claim_type=claim_type,
+                chunks_indexed=total_chunks,
+            )
         )
-    )
 
-    return IngestResponse(policy_id=policy_id, chunks_indexed=len(chunks))
+        return IngestResponse(policy_id=policy_id, chunks_indexed=total_chunks)
+        
+    finally:
+        # Cleanup temp file
+        if os.path.exists(temp_filename):
+            os.remove(temp_filename)
+            logger.info(f"Cleaned up temp file: {temp_filename}")
 
 
 @app.post("/analyze", response_model=AnalysisResponse)

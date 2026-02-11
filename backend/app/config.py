@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     groq_chat_model: str = "llama-3.1-8b-instant"
     embeddings_provider: str = "sentence-transformers"  # hash | sentence-transformers
     embeddings_dim: int = 384
-    embeddings_model: str = "all-MiniLM-L6-v2"
+    embeddings_model: str = "BAAI/bge-small-en-v1.5"
 
     chunk_size: int = 1000
     chunk_overlap: int = 200

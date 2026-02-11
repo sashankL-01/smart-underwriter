@@ -9,6 +9,8 @@ class ChunkMetadata(BaseModel):
     source_filename: str
     policy_id: str
     section: Optional[str] = None
+    content_type: Optional[str] = None
+    keywords: Optional[List[str]] = None
     jurisdiction: Optional[str] = None
     claim_type: Optional[str] = None
 

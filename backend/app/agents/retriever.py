@@ -11,7 +11,7 @@ from app.agents.self_query import build_metadata_filter
 def retrieve_chunks(
     store: VectorStore,
     request: AnalysisRequest,
-    top_k: int = 5,
+    top_k: int = 15,
 ) -> List[Tuple[float, DocumentChunk]]:
     query_embedding = embed_texts([request.claim_text])[0]
 

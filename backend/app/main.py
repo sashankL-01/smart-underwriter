@@ -27,16 +27,16 @@ from contextlib import asynccontextmanager
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup: Pre-load the embedding model
     logger.info("Pre-loading embedding model to avoid cold-start latency...")
-    from app.ingestion.embeddings import get_model
+    from app.ingestion.embeddings import get_model, embed_texts
     try:
         get_model()
+        logger.info("Warming up inference engine...")
+        embed_texts(["warmup"]) # This forces the ONNX graph compilation!
         logger.info("Embedding model pre-loaded successfully.")
     except Exception as e:
         logger.error(f"Failed to pre-load embedding model: {e}")
     yield
-    # Shutdown logic (if any) goes here
 
 app = FastAPI(title="Smart Underwriter", lifespan=lifespan)
 

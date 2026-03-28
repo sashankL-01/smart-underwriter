@@ -23,7 +23,22 @@ from app.schemas.models import DocumentChunk
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="Smart Underwriter")
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup: Pre-load the embedding model
+    logger.info("Pre-loading embedding model to avoid cold-start latency...")
+    from app.ingestion.embeddings import get_model
+    try:
+        get_model()
+        logger.info("Embedding model pre-loaded successfully.")
+    except Exception as e:
+        logger.error(f"Failed to pre-load embedding model: {e}")
+    yield
+    # Shutdown logic (if any) goes here
+
+app = FastAPI(title="Smart Underwriter", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,

@@ -1,0 +1,14 @@
+### 1. Standard Illness (Expected: likely-covered)
+"I was urgently admitted to the general ward for 3 days after experiencing severe chest pain and being diagnosed with acute pneumonia. The hospital billed me for room rent, round-the-clock nursing care, and multiple consultations with the attending physician. I am submitting all original diagnostic reports and pharmacy bills for reimbursement of my medical expenses."
+
+### 2. Hazardous Activity (Expected: excluded)
+"During a designated outdoor adventure holiday, I participated in a sky diving event where I unfortunately suffered a hard landing and broke my right leg. I required immediate emergency medical evacuation and subsequent orthopedic surgery at the nearest local hospital. I am claiming the costs for the surgery and the customized leg brace prescribed by the specialist."
+
+### 3. Cosmetic Surgery (Expected: excluded)
+"I recently opted to undergo an elective rhinoplasty (plastic surgery on my nose) strictly to improve my overall physical appearance and facial symmetry. The procedure was completed successfully at a private day-care center by a licensed cosmetic surgeon. I am submitting the surgeon's professional fees and the surgical facility charges for reimbursement under my policy."
+
+### 4. Specific Ailment Exclusion (Expected: excluded)
+"Over the past month, I have been experiencing chronic back pain and was admitted to a specialized clinic to receive intensive diagnostic tests and physical therapy for Spondylitis. The treatment involved a week-long stay and daily sessions with specialized medical equipment. Please process my claim for the hospitalization, diagnostic imaging, and therapy costs."
+
+### 5. Intoxication (Expected: excluded)
+"I was taken to the emergency room by ambulance for the treatment of multiple severe lacerations and a concussion sustained in a late-night car accident. The police report and medical admission notes indicate that I was driving under the influence of alcohol at the time of the collision. I am claiming the emergency room charges and subsequent wound care expenses."

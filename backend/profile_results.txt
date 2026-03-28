@@ -1,0 +1,17 @@
+Warming up embedder...
+Warmup took 2.89s
+
+Initializing store...
+Store initialized in 2.07s
+
+Retrieving chunks...
+Retrieved 15 chunks in 2.23s
+
+Analyzing claim (1st LLM call)...
+Decision: likely-covered
+Analyzed claim in 2.97s
+
+Validating citations (2nd LLM call)...
+Validated citations in 27.55s
+
+Total analysis time (minus warmup): 34.81s
